@@ -85,8 +85,9 @@ var ajaxProxyXMLHttpRequest = function() {
 		this._instanceName = new Date().getTime();
 		ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = this;
 		
-		var url = ajaxProxyXMLHttpRequest.URL + (url.indexOf('?') == -1 ? "?" : "&");
-		url += "url="+encodeURIComponent(this._url) +
+		var url = ajaxProxyXMLHttpRequest.URL;
+		url += (url.indexOf('?') == -1 ? "?" : "&") +
+		       "url="+encodeURIComponent(this._url) +
 		       "&object="+encodeURIComponent("ajaxProxyXMLHttpRequest._existingInstances["+this._instanceName+"]") +
 		       "&method="+encodeURICOmponent(this._method);
 		
