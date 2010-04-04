@@ -41,7 +41,7 @@ var ajaxProxyXMLHttpRequest = function() {
 		if(async != undefined && !async)
 			throw "sync mode is not supported by ajax-proxy";
 
-		this._method = method.toUpper();
+		this._method = method.toUpperCase();
 		this._url = this._makeFullURL(url);
 		this._user = user;
 		this._password = password;
