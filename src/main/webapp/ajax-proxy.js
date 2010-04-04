@@ -195,5 +195,11 @@ var ajaxProxyXMLHttpRequest = function() {
 	};
 };
 
+ajaxProxyXMLHttpRequest.UNSENT = 0;
+ajaxProxyXMLHttpRequest.OPENED = 1;
+ajaxProxyXMLHttpRequest.HEADERS_RECEIVED = 2;
+ajaxProxyXMLHttpRequest.LOADING = 3;
+ajaxProxyXMLHttpRequest.DONE = 4;
+
 ajaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
 ajaxProxyXMLHttpRequest._existingInstances = { };
