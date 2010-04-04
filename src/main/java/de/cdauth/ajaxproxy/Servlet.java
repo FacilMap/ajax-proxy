@@ -126,7 +126,7 @@ public class Servlet extends HttpServlet
 			}
 			
 			a_out.println(a_jsObj+".status = "+conn.getResponseCode());
-			a_out.println(a_jsObj+".statusText = "+conn.getResponseMessage());
+			a_out.println(a_jsObj+".statusText = "+escapeJSString(conn.getResponseMessage()));
 			a_out.println(a_jsObj+"._responseHeaders = { };");
 			for(Map.Entry<String,List<String>> responseHeader : conn.getHeaderFields().entrySet())
 			{

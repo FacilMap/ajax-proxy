@@ -89,7 +89,7 @@ var ajaxProxyXMLHttpRequest = function() {
 		url += (url.indexOf('?') == -1 ? "?" : "&") +
 		       "url="+encodeURIComponent(this._url) +
 		       "&object="+encodeURIComponent("ajaxProxyXMLHttpRequest._existingInstances["+this._instanceName+"]") +
-		       "&method="+encodeURICOmponent(this._method);
+		       "&method="+encodeURIComponent(this._method);
 		
 		var i = 0;
 		for(var it in this._requestHeaders)
