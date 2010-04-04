@@ -9,7 +9,7 @@
 		
 		<init-param>
 			<param-name>urlWhiteList</param-name>
-			<param-value>^http(s?)://((www\.|api\.)?openstreetmap\.org/api/.*|[^?#]+\.(xml|kml|osm|gpx)([#?].*)?)$</param-value>
+			<param-value>^http(s?)://((www\.|api\.)?openstreetmap\.org/api/.*|[^?#]+\.(xml|kml|osm|gpx)([#?].*)?|nominatim\.openstreetmap\.org/search.*)$</param-value>
 		</init-param>
 	</servlet>
 	
