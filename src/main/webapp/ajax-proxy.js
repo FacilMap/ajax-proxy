@@ -65,7 +65,7 @@ var ajaxProxyXMLHttpRequest = function() {
 	};
 
 	this.setRequestHeader = function(header, value) {
-		if(this.state != this.OPENED || this._sent)
+		if(this.readyState != this.OPENED || this._sent)
 			throw "INVALID_STATE_ERR";
 
 		header = header.toLower();
@@ -76,7 +76,7 @@ var ajaxProxyXMLHttpRequest = function() {
 	};
 
 	this.send = function(data) {
-		if(this.state != this.OPENED || this._sent)
+		if(this.readyState != this.OPENED || this._sent)
 			throw "INVALID_STATE_ERR";
 		
 		if(this._method == "GET" || this._method == "HEAD")
