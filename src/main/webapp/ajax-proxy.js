@@ -91,7 +91,7 @@ var ajaxProxyXMLHttpRequest = function() {
 		       "&method="+encodeURICOmponent(this._method);
 		
 		var i = 0;
-		for(var it : this._requestHeaders)
+		for(var it in this._requestHeaders)
 		{
 			url += "&header"+i+"k="+encodeURIComponent(it) +
 			       "&header"+i+"v="+encodeURIComponent(this._requestHeaders[it]);
@@ -194,5 +194,5 @@ var ajaxProxyXMLHttpRequest = function() {
 	};
 };
 
-ajaxProxyXMLHttpRequest.URL = "http://localhost:8080/ajax-proxy/proxy";
+ajaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
 ajaxProxyXMLHttpRequest._existingInstances = { };
