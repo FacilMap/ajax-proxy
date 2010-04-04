@@ -10,7 +10,7 @@
 	
 	<servlet-mapping>
 		<servlet-name>ajaxproxy</servlet-name>
-		<url-pattern>/proxy</url-pattern>
+		<url-pattern>/proxy.js</url-pattern>
 	</servlet-mapping>
 	
 	<filter>
