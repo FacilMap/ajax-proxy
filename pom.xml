@@ -3,8 +3,9 @@
 	<groupId>de.cdauth</groupId>
 	<artifactId>ajax-proxy</artifactId>
 	<version>SNAPSHOT</version>
-	<name>AJAX proxy through JSON</name>
+	<name>AJAX proxy</name>
 	<packaging>war</packaging>
+	<description>Proxies AJAX requests through JavaScript function calls to work around the Same Origin Policy.</description>
 	<licenses>
 		<license>
 			<name>GNU Affero General Public License Version 3</name>
@@ -23,6 +24,13 @@
 			<version>2.4</version>
 			<type>jar</type>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.pjl-comp-filter</groupId>
+			<artifactId>pjl-comp-filter</artifactId>
+			<version>1.6.4</version>
+			<type>jar</type>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 	<properties>

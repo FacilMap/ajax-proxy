@@ -1,3 +1,15 @@
+/**
+ * An implementation of the XMLHttpRequest interface (http://www.w3.org/TR/XMLHttpRequest/) that
+ * works around the Same Origin Policy by using JavaScript function calls that the ajax-proxy
+ * Servlet creates.
+ * 
+ * Differences to standard XMLHttpRequest:
+ * - Synchronous mode is not supported.
+ * - Browser cache is not used.
+ * 
+ * All members starting with a _ do not belong to the standard interface.
+ */
+
 var ajaxProxyXMLHttpRequest = function() {
     this.onreadystatechange = function() { };
 
@@ -14,26 +26,130 @@ var ajaxProxyXMLHttpRequest = function() {
 	this.responseText = undefined;
 	this.responseXML = undefined;
 	
-	// Non-standard
-	this.responseHeaders = undefined;
-	this.instanceName = undefined;
+	this._responseHeaders = undefined;
+	this._instanceName = undefined;
+	
+	this._method = undefined;
+	this._url = undefined;
+	this._user = undefined;
+	this._password = undefined;
+	this._requestHeaders = undefined;
+	
+	this._sent = false;
 
 	this.open = function(method, url, async, user, password) {
-		// FIXME
+		if(async != undefined && !async)
+			throw "sync mode is not supported by ajax-proxy";
+
+		this._method = method.toUpper();
+		this._url = this._makeFullURL(url);
+		this._user = user;
+		this._password = password;
+		this._requestHeaders = { };
+		
+		this.status = undefined;
+		this.statusText = undefined;
+		this.responseText = undefined;
+		this.responseXML = undefined;
+		
+		this._responseHeaders = undefined;
+		if(this._instanceName != undefined)
+		{
+			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
+			this._instanceName = undefined;
+		}
+		this._sent = false;
+		
+		this.readyState = this.OPENED;
+		this._onreadystatechangeWrapper();
 	};
 
 	this.setRequestHeader = function(header, value) {
-		// FIXME
+		if(this.state != this.OPENED || this._sent)
+			throw "INVALID_STATE_ERR";
+
+		header = header.toLower();
+		if(this._requestHeaders[header] != undefined)
+			this._requestHeaders[header] += ", "+value;
+		else
+			this._requestHeaders[header] = value;
 	};
 
 	this.send = function(data) {
-		this.instanceName = new Date().getTime();
-		ajaxProxyXMLHttpRequest.existingInstances[this.instanceName] = this;
-		// FIXME
+		if(this.state != this.OPENED || this._sent)
+			throw "INVALID_STATE_ERR";
+		
+		if(this._method == "GET" || this._method == "HEAD")
+			data = undefined;
+		
+		this._instanceName = new Date().getTime();
+		ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = this;
+		
+		var url = ajaxProxyXMLHttpRequest.URL + (url.indexOf('?') == -1 ? "?" : "&");
+		url += "url="+encodeURIComponent(this._url) +
+		       "&object="+encodeURIComponent("ajaxProxyXMLHttpRequest._existingInstances["+this._instanceName+"]") +
+		       "&method="+encodeURICOmponent(this._method);
+		
+		var i = 0;
+		for(var it : this._requestHeaders)
+		{
+			url += "&header"+i+"k="+encodeURIComponent(it) +
+			       "&header"+i+"v="+encodeURIComponent(this._requestHeaders[it]);
+			i++;
+		}
+		
+		if(data != undefined)
+		{
+			if(data.innerHTML != undefined)
+			{
+				if(this._requestHeaders["content-type"] == undefined)
+					this._requestHeaders["content-type"] = "text/xml; charset=UTF-8";
+				url += "&data="+encodeURIComponent(data.innerHTML);
+			}
+			else
+			{
+				if(this._requestHeaders["content-type"] == undefined)
+					this._requestHeaders["content-type"] = "text/plain; charset=UTF-8";
+				url += "&data="+encodeURIComponent(data);
+			}
+		}
+		
+		this._sent = true;
+		this._onreadystatechangeWrapper();
+		
+		var scriptEl = document.createElement("script");
+		scriptEl.src = url;
+		scriptEl.type = "text/javascript";
+		document.getElementsByTagName("head")[0].appendChild(scriptEl);
 	};
 
 	this.abort = function() {
-		// FIXME
+		this._method = undefined;
+		this._url = undefined;
+		this._user = undefined;
+		this._password = undefined;
+		this._requestHeaders = undefined;
+		
+		this.status = undefined;
+		this.statusText = undefined;
+		this.responseText = undefined;
+		this.responseXML = undefined;
+		
+		this._responseHeaders = undefined;
+		if(this._instanceName != undefined)
+		{
+			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
+			this._instanceName = undefined;
+		}
+		
+		if(this.readyState != this.UNSENT && (this.readyState != this.OPENED || this._sent) && this.readyState != this.DONE)
+		{
+			this._sent = false;
+			this.readyState = this.DONE;
+			this._onreadystatechangeWrapper();
+		}
+		
+		this.readyState = this.UNSENT;
 	};
 	
 	this.getResponseHeader = function(header) {
@@ -46,13 +162,13 @@ var ajaxProxyXMLHttpRequest = function() {
 		return this.responseHeaders;
 	};
 	
-	this.onreadystatechangeWrapper = function() {
-		if(this.status == this.DONE)
-			ajaxProxyXMLHttpRequest.existingInstances[this.instanceName] = undefined;
+	this._onreadystatechangeWrapper = function() {
+		if(this.readyState == this.DONE)
+			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
 		this.onreadystatechange();
 	};
 	
-	this.parseResponseXML = function() {
+	this._parseResponseXML = function() {
 		try {
 			if(window.DOMParser)
 			{
@@ -62,13 +178,21 @@ var ajaxProxyXMLHttpRequest = function() {
 			else
 			{
 				this.responseXML = new ActiveXObject("Microsoft.XMLDOM");
-				this.responseXML.async="false";
+				this.responseXML.async = "false";
 				this.responseXML.loadXML(this.responseText);
 			}
 		} catch(e) {
 			this.responseXML = null;
 		}
 	};
+	
+	this._makeFullURL = function(url) {
+		// See http://stackoverflow.com/questions/470832/getting-an-absolute-url-from-a-relative-one-ie6-issue
+		var el = document.createElement("div");
+		el.innerHTML = "<a href=\""+url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")+"\">x</a>";
+		return el.firstChild.href;
+	};
 };
 
-ajaxProxyXMLHttpRequest.existingInstances = { };
+ajaxProxyXMLHttpRequest.URL = "http://localhost:8080/ajax-proxy/proxy";
+ajaxProxyXMLHttpRequest._existingInstances = { };
