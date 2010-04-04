@@ -25,6 +25,17 @@ public class Servlet extends HttpServlet
 	private static final long serialVersionUID = -8231579131306573378L;
 
 	public static final String USER_AGENT = "de.cdauth.ajaxproxy (http://gitorious.org/cdauths-map/ajax-proxy)";
+	public static final String CONFIG_WHITELIST = "urlWhiteList";
+	
+	private Pattern m_whiteList = null;
+	
+	@Override
+	public void init()
+	{
+		String whiteList = getInitParameter(CONFIG_WHITELIST);
+		if(whiteList != null)
+			m_whiteList = Pattern.compile(whiteList);
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest a_req, HttpServletResponse a_resp)
@@ -59,9 +70,12 @@ public class Servlet extends HttpServlet
 		proxyRequest(url, jsObject, method, data, headers, userAgent, remoteAddr, a_resp.getWriter());
 	}
 	
-	protected boolean checkURLAccess(URL a_url)
+	protected boolean checkURLAccess(String a_url)
 	{
-		return true;
+		if(m_whiteList == null)
+			return true;
+		
+		return m_whiteList.matcher(a_url).matches();
 	}
 	
 	protected void proxyRequest(String a_url, String a_jsObj, String a_method, String a_data, Map<String,String> a_headers, String a_remoteUserAgent, String a_remoteAddr, PrintWriter a_out)
@@ -72,7 +86,7 @@ public class Servlet extends HttpServlet
 			URL url = new URL(a_url);
 			if(!url.getProtocol().equalsIgnoreCase("http") && !url.getProtocol().equalsIgnoreCase("https"))
 				throw new IllegalArgumentException("Invalid protocol");
-			else if(!checkURLAccess(url))
+			else if(!checkURLAccess(a_url))
 				throw new IllegalAccessException("URL access not allowed");
 			if(a_method == null)
 				throw new IllegalArgumentException("Method missing");

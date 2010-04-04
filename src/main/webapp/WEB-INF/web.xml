@@ -6,6 +6,11 @@
 	<servlet>
 		<servlet-name>ajaxproxy</servlet-name>
 		<servlet-class>de.cdauth.ajaxproxy.Servlet</servlet-class>
+		
+		<init-param>
+			<param-name>urlWhiteList</param-name>
+			<param-value>^http(s?)://((www\.|api\.)?openstreetmap\.org/api/.*|[^?#]+\.(xml|kml|osm|gpx)([#?].*)?)$</param-value>
+		</init-param>
 	</servlet>
 	
 	<servlet-mapping>
