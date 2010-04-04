@@ -178,7 +178,6 @@ public class Servlet extends HttpServlet
 				}
 			}
 			
-			a_out.println(a_jsObj+"._parseResponseXML();");
 			a_out.println(a_jsObj+".readyState = "+a_jsObj+".DONE;");
 			a_out.println(a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
