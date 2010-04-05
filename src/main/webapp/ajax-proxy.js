@@ -29,7 +29,7 @@
  * The members are set by the JavaScript code the Servlet produces.
  */
 
-var ajaxProxyXMLHttpRequest = function() {
+var AjaxProxyXMLHttpRequest = function() {
     this.onreadystatechange = function() { };
 
 	this.UNSENT = 0;
@@ -51,7 +51,7 @@ var ajaxProxyXMLHttpRequest = function() {
 	*/
 	this._responseHeaders = undefined;
 	/**
-	 * The index in ajaxProxyXMLHttpRequest._existingInstances that this object has or undefined if it doesn’t
+	 * The index in AjaxProxyXMLHttpRequest._existingInstances that this object has or undefined if it doesn’t
 	 * have any. This is used to pass as <code>object</code> paramter to the Servlet.
 	 * @var Number
 	 */
@@ -109,7 +109,7 @@ var ajaxProxyXMLHttpRequest = function() {
 		this._responseHeaders = undefined;
 		if(this._instanceName != undefined)
 		{
-			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
+			AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
 			this._instanceName = undefined;
 		}
 		this._sent = false;
@@ -137,12 +137,12 @@ var ajaxProxyXMLHttpRequest = function() {
 			data = undefined;
 		
 		this._instanceName = new Date().getTime();
-		ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = this;
+		AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] = this;
 		
-		var url = ajaxProxyXMLHttpRequest.URL;
+		var url = AjaxProxyXMLHttpRequest.URL;
 		url += (url.indexOf('?') == -1 ? "?" : "&") +
 		       "url="+encodeURIComponent(this._url) +
-		       "&object="+encodeURIComponent("ajaxProxyXMLHttpRequest._existingInstances["+this._instanceName+"]") +
+		       "&object="+encodeURIComponent("AjaxProxyXMLHttpRequest._existingInstances["+this._instanceName+"]") +
 		       "&method="+encodeURIComponent(this._method);
 		
 		var i = 0;
@@ -193,7 +193,7 @@ var ajaxProxyXMLHttpRequest = function() {
 		this._responseHeaders = undefined;
 		if(this._instanceName != undefined)
 		{
-			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
+			AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
 			this._instanceName = undefined;
 		}
 		
@@ -224,7 +224,7 @@ var ajaxProxyXMLHttpRequest = function() {
 	 */
 	this._onreadystatechangeWrapper = function() {
 		if(this.readyState == this.DONE)
-			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
+			AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
 		this.onreadystatechange();
 	};
 	
@@ -265,22 +265,22 @@ var ajaxProxyXMLHttpRequest = function() {
 	};
 };
 
-ajaxProxyXMLHttpRequest.UNSENT = 0;
-ajaxProxyXMLHttpRequest.OPENED = 1;
-ajaxProxyXMLHttpRequest.HEADERS_RECEIVED = 2;
-ajaxProxyXMLHttpRequest.LOADING = 3;
-ajaxProxyXMLHttpRequest.DONE = 4;
+AjaxProxyXMLHttpRequest.UNSENT = 0;
+AjaxProxyXMLHttpRequest.OPENED = 1;
+AjaxProxyXMLHttpRequest.HEADERS_RECEIVED = 2;
+AjaxProxyXMLHttpRequest.LOADING = 3;
+AjaxProxyXMLHttpRequest.DONE = 4;
 
 /**
  * The URL of the proxy.js Servlet to use.
  * @var String
  */
-ajaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
+AjaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
 
 /**
- * Contains all ajaxProxyXMLHttpRequest objects that are currently waiting for a response from the Servlet.
+ * Contains all AjaxProxyXMLHttpRequest objects that are currently waiting for a response from the Servlet.
  * The <code>_instanceName</code> properties are used as indexes to reference them by the Sevlet. Objects are
  * added by the <code>send()</code> method.
  * @var Object
  */
-ajaxProxyXMLHttpRequest._existingInstances = { };
+AjaxProxyXMLHttpRequest._existingInstances = { };
