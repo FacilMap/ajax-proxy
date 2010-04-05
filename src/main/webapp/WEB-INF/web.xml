@@ -27,7 +27,29 @@
 		
 		<init-param>
 			<param-name>urlWhiteList</param-name>
-			<param-value>^http(s?)://((www\.|api\.)?openstreetmap\.org/api/.*|[^?#]+\.(xml|kml|osm|gpx)([#?].*)?|nominatim\.openstreetmap\.org/search.*)$</param-value>
+			<param-value>
+				^http(s?)://(
+					(www\.|api\.|xapi\.)?openstreetmap\.org/api/.*
+					|
+					(www\.|api\.)?openstreetmap\.org/trace/\d+/data
+					|
+					[^?\#]+\.(xml|kml|osm|gpx|gml)([\#?].*)?
+					|
+					nominatim\.openstreetmap\.org/search.*
+					|
+					gazetteer\.openstreetmap\.org/namefinder.*
+					|
+					osmxapi\.hypercube\.telascience\.org/api/.*
+					|
+					osm\.bearstech\.com/osmxapi/api/.*
+					|
+					(www\.)?informationfreeway\.org/api/.*
+					|
+					tagwatch\.stoecker\.eu/osmxapi/.*
+					|
+					tagwatch\.openstreetmap\.de/osmxapi/.*
+				)$
+			</param-value>
 		</init-param>
 	</servlet>
 	

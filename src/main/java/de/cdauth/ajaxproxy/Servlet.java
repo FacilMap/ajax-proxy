@@ -87,7 +87,7 @@ public class Servlet extends HttpServlet
 	{
 		String whiteList = getInitParameter(CONFIG_WHITELIST);
 		if(whiteList != null)
-			m_whiteList = Pattern.compile(whiteList);
+			m_whiteList = Pattern.compile(whiteList, Pattern.COMMENTS);
 	}
 
 	@Override
