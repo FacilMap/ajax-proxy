@@ -25,6 +25,8 @@
  * - Browser cache is not used.
  * 
  * All members starting with a _ do not belong to the standard interface.
+ * 
+ * The members are set by the JavaScript code the Servlet produces.
  */
 
 var ajaxProxyXMLHttpRequest = function() {
@@ -43,15 +45,50 @@ var ajaxProxyXMLHttpRequest = function() {
 	this.responseText = undefined;
 	this.responseXML = undefined;
 	
+	/**
+	 * A key—value object that contains the headers the server sent.
+	 * @var Object
+	*/
 	this._responseHeaders = undefined;
+	/**
+	 * The index in ajaxProxyXMLHttpRequest._existingInstances that this object has or undefined if it doesn’t
+	 * have any. This is used to pass as <code>object</code> paramter to the Servlet.
+	 * @var Number
+	 */
 	this._instanceName = undefined;
-	
+
+	/**
+	 * The HTTP method to use. Is set by <code>open()</code>.
+	 * @var String
+	 */
 	this._method = undefined;
+	/**
+	 * The HTTP/HTTPS URL to open. Is set by <code>open()</code>.
+	 * @var String
+	 */
 	this._url = undefined;
+	/**
+	 * The user name to log in with to the URL. Is set by <code>open()</code>.
+	 * @var String
+	 * @todo Implement this.
+	 */
 	this._user = undefined;
+	/**
+	 * The password to log in with to the URL. Is set by <code>open()</code>.
+	 * @var String
+	 * @todo Implement this.
+	 */
 	this._password = undefined;
+	/**
+	 * The HTTP headers to send. Is set by <code>setRequestHeader()</code>.
+	 * @var String
+	 */
 	this._requestHeaders = undefined;
 	
+	/**
+	 * Whether the <code>send()</code> method has been invoked. Known as the “send() flag” in the standard.
+	 * @var Boolean
+	 */
 	this._sent = false;
 
 	this.open = function(method, url, async, user, password) {
@@ -180,12 +217,23 @@ var ajaxProxyXMLHttpRequest = function() {
 		return this.responseHeaders;
 	};
 	
+	/**
+	 * This is called by the Servlet every time the <code>onreadystatechange</code> event is to be invoked according
+	 * to the standard.
+	 * @return void
+	 */
 	this._onreadystatechangeWrapper = function() {
 		if(this.readyState == this.DONE)
 			ajaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
 		this.onreadystatechange();
 	};
 	
+	/**
+	 * Is called by the Servlet when new data is appended to the <code>responseText</code>. This should use the
+	 * browsers XML parser to set the <code>responseXML</code> property accordingly. If the text cannot be parsed,
+	 * it should be set to <code>null</code> without raising an error.
+	 * @return void
+	 */
 	this._parseResponseXML = function() {
 		try {
 			if(window.DOMParser)
@@ -204,6 +252,11 @@ var ajaxProxyXMLHttpRequest = function() {
 		}
 	};
 	
+	/**
+	 * Makes an absolute HTTP/HTTPS URL from any URL relative to the calling page.
+	 * @param String url A relative or absolute URL.
+	 * @return String The absolute representation of the <code>url</code> parameter.
+	 */
 	this._makeFullURL = function(url) {
 		// See http://stackoverflow.com/questions/470832/getting-an-absolute-url-from-a-relative-one-ie6-issue
 		var el = document.createElement("div");
@@ -218,5 +271,16 @@ ajaxProxyXMLHttpRequest.HEADERS_RECEIVED = 2;
 ajaxProxyXMLHttpRequest.LOADING = 3;
 ajaxProxyXMLHttpRequest.DONE = 4;
 
+/**
+ * The URL of the proxy.js Servlet to use.
+ * @var String
+ */
 ajaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
+
+/**
+ * Contains all ajaxProxyXMLHttpRequest objects that are currently waiting for a response from the Servlet.
+ * The <code>_instanceName</code> properties are used as indexes to reference them by the Sevlet. Objects are
+ * added by the <code>send()</code> method.
+ * @var Object
+ */
 ajaxProxyXMLHttpRequest._existingInstances = { };
