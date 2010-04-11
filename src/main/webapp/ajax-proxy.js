@@ -90,6 +90,13 @@ var AjaxProxyXMLHttpRequest = function() {
 	 * @var Boolean
 	 */
 	this._sent = false;
+	
+	/**
+	 * A <code>setTimeout()</code> object that makes the connection time out after AjaxProxyXMLHttpRequest.timeout
+	 * seconds.
+	 * @var Object
+	 */
+	this._timeout = undefined;
 
 	this.open = function(method, url, async, user, password) {
 		if(async != undefined && !async)
@@ -227,7 +234,11 @@ var AjaxProxyXMLHttpRequest = function() {
 	 */
 	this._onreadystatechangeWrapper = function() {
 		if(this.readyState == this.DONE)
+		{
 			AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] = undefined;
+			if(this._timeout != undefined)
+				clearTimeout(this._timeout);
+		}
 		this.onreadystatechange();
 	};
 	
@@ -266,6 +277,33 @@ var AjaxProxyXMLHttpRequest = function() {
 		el.innerHTML = "<a href=\""+url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")+"\">x</a>";
 		return el.firstChild.href;
 	};
+	
+	/**
+	 * Is called by the Servlet every now and then. Resets the connection to time out after
+	 * AjaxProxyXMLHttpRequest.timeout seconds.
+	 * @return void
+	 */
+	this._resetTimeout = function() {
+		if(this._timeout != undefined)
+			clearTimeout(this._timeout);
+		if(AjaxProxyXMLHttpRequest.timeout > 0)
+		{
+			var req = this;
+			this._timeout = setTimeout(function(){ req._timeoutCallback(); }, AjaxProxyXMLHttpRequest.timeout);
+		}
+	};
+	
+	/**
+	 * Is called when the connection times out.
+	 * @return void
+	 */
+	this._timeoutCallback = function() {
+		this.status = 504;
+		this.statusText = "Gateway Timeout";
+		
+		this.readyState = this.DONE;
+		this._onreadystatechangeWrapper();
+	};
 };
 
 AjaxProxyXMLHttpRequest.UNSENT = 0;
@@ -279,6 +317,14 @@ AjaxProxyXMLHttpRequest.DONE = 4;
  * @var String
  */
 AjaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
+
+/**
+ * A timeout in seconds. When no data is received during this amount of time, the status changes to READY with
+ * HTTP status 504 Gateway Timeout. Set to anything <= 0 to disable. The Servlet will usually send something
+ * every 5 seconds, even if no data is received.
+ * @var Number
+ */
+AjaxProxyXMLHttpRequest.timeout = 30;
 
 /**
  * If this is true, some debugging alert boxes will be shown.

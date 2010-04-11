@@ -80,6 +80,11 @@ public class Servlet extends HttpServlet
 	 */
 	public static final String CONFIG_WHITELIST = "urlWhiteList";
 	
+	/**
+	 * The interval in milliseconds to send _resetTimeout() JavaScript calls.
+	 */
+	public static final int KEEPALIVE_INTERVAL = 5000;
+	
 	private Pattern m_whiteList = null;
 	
 	@Override
@@ -91,8 +96,7 @@ public class Servlet extends HttpServlet
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest a_req, HttpServletResponse a_resp)
-			throws ServletException, IOException
+	protected void doGet(HttpServletRequest a_req, HttpServletResponse a_resp) throws ServletException, IOException
 	{
 		a_req.setCharacterEncoding("ISO8859_1"); // We do not use this actually, it is just to not lose bytes
 		a_resp.setContentType("text/javascript; charset=UTF-8");
@@ -150,8 +154,13 @@ public class Servlet extends HttpServlet
 	 * @param a_remoteAddr The IP address of the client, is sent as <code>X-Forwarded-For</code> header.
 	 * @param a_out The PrintWriter to print the JavaScript code to.
 	 */
-	protected void proxyRequest(String a_url, String a_jsObj, String a_method, String a_data, Map<String,String> a_headers, String a_remoteUserAgent, String a_remoteAddr, PrintWriter a_out)
+	protected void proxyRequest(String a_url, final String a_jsObj, String a_method, String a_data, Map<String,String> a_headers, String a_remoteUserAgent, String a_remoteAddr, final PrintWriter a_out)
 	{
+		println(a_out, "if(window."+a_jsObj+" != undefined)");
+		println(a_out, "{");
+		
+		Thread keepAlive = null;
+
 		try {
 			if(a_url == null)
 				throw new IllegalArgumentException("URL missing");
@@ -166,6 +175,21 @@ public class Servlet extends HttpServlet
 				throw new IllegalArgumentException("Invalid method");
 			if((a_method.equals("GET") || a_method.equals("HEAD")) && a_data != null)
 				throw new IllegalArgumentException("Cannot send data with GET or HEAD.");
+			
+			keepAlive = new Thread() {
+				@Override
+				public void run()
+				{
+					try {
+						Thread.sleep(KEEPALIVE_INTERVAL);
+					} catch(InterruptedException e) {
+						return;
+					}
+
+					println(a_out, "\t"+a_jsObj+"._resetTimeout();");
+				}
+			};
+			keepAlive.start();
 			
 			// FIXME: Ignore SSL certificate
 			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
@@ -211,20 +235,20 @@ public class Servlet extends HttpServlet
 				send.write(a_data);
 				send.flush();
 			}
-			
-			a_out.println(a_jsObj+".status = "+conn.getResponseCode()+";");
-			a_out.println(a_jsObj+".statusText = "+escapeJSString(conn.getResponseMessage())+";");
-			a_out.println(a_jsObj+"._responseHeaders = { };");
+
+			println(a_out, "\t"+a_jsObj+".status = "+conn.getResponseCode()+";");
+			println(a_out, "\t"+a_jsObj+".statusText = "+escapeJSString(conn.getResponseMessage())+";");
+			println(a_out, "\t"+a_jsObj+"._responseHeaders = { };");
 			for(Map.Entry<String,List<String>> responseHeader : conn.getHeaderFields().entrySet())
 			{
 				if(responseHeader.getKey() == null)
 					continue;
-				a_out.println(a_jsObj+"._responseHeaders["+escapeJSString(responseHeader.getKey())+"] = "+escapeJSString(implode(", ", responseHeader.getValue()))+";");
+				println(a_out, "\t"+a_jsObj+"._responseHeaders["+escapeJSString(responseHeader.getKey())+"] = "+escapeJSString(implode(", ", responseHeader.getValue()))+";");
 			}
-			a_out.println(a_jsObj+".readyState = "+a_jsObj+".HEADERS_RECEIVED;");
-			a_out.println(a_jsObj+"._onreadystatechangeWrapper();");
+			println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".HEADERS_RECEIVED;");
+			println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
-			a_out.println();
+			println(a_out, "");
 			
 			boolean receiveState = false;
 			InputStream responseStream = (conn.getResponseCode() == 200 ? conn.getInputStream() : conn.getErrorStream());
@@ -247,48 +271,55 @@ public class Servlet extends HttpServlet
 			{
 				if(!receiveState)
 				{
-					a_out.println(a_jsObj+".readyState = "+a_jsObj+".LOADING;");
-					a_out.println(a_jsObj+"._onreadystatechangeWrapper();");
+					println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".LOADING;");
+					println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
 					a_out.flush();
 					receiveState = true;
 					
-					a_out.println();
-					a_out.println(a_jsObj+".responseText = \"\";");
+					println(a_out, "");
+					println(a_out, "\t"+a_jsObj+".responseText = \"\";");
 				}
 				
-				a_out.println(a_jsObj+".responseText += "+escapeJSString(buffer, 0, read)+";");
+				println(a_out, "\t"+a_jsObj+".responseText += "+escapeJSString(buffer, 0, read)+";");
 				
 				if(!response.ready())
 				{
-					a_out.println(a_jsObj+"._parseResponseXML();");
+					println(a_out, "\t"+a_jsObj+"._parseResponseXML();");
 					a_out.flush();
 				}
 			}
 			
-			a_out.println(a_jsObj+".readyState = "+a_jsObj+".DONE;");
-			a_out.println(a_jsObj+"._onreadystatechangeWrapper();");
+			println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".DONE;");
+			println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
-			a_out.println();
+			println(a_out, "");
 		} catch(Exception e) {
 			if(e instanceof IOException)
 			{
-				a_out.println(a_jsObj+".status = 502;");
-				a_out.println(a_jsObj+".statusText = \"Bad Gateway\";");
+				println(a_out, "\t"+a_jsObj+".status = 502;");
+				println(a_out, "\t"+a_jsObj+".statusText = \"Bad Gateway\";");
 			}
 			else
 			{
-				a_out.println(a_jsObj+".status = 501;");
-				a_out.println(a_jsObj+".statusText = \"Not implemented\";");
+				println(a_out, "\t"+a_jsObj+".status = 501;");
+				println(a_out, "\t"+a_jsObj+".statusText = \"Not implemented\";");
 			}
-			a_out.println(a_jsObj+".responseText = "+escapeJSString(e.getClass().getName()+": "+e.getMessage()+"\n")+" +");
+			println(a_out, "\t"+a_jsObj+".responseText = "+escapeJSString(e.getClass().getName()+": "+e.getMessage()+"\n")+" +");
 			for(StackTraceElement line : e.getStackTrace())
-				a_out.println(escapeJSString(line.toString() + "\n")+" +");
-			a_out.println("\"\";");
-			a_out.println(a_jsObj+".readyState = "+a_jsObj+".DONE;");
-			a_out.println(a_jsObj+"._onreadystatechangeWrapper();");
+				println(a_out, "\t"+escapeJSString(line.toString() + "\n")+" +");
+			println(a_out, "\t\"\";");
+			println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".DONE;");
+			println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
-			a_out.println();
+			println(a_out, "");
 		}
+		finally
+		{
+			if(keepAlive != null)
+				keepAlive.interrupt();
+		}
+		
+		println(a_out, "}");
 	}
 	
 	/**
@@ -367,5 +398,13 @@ public class Servlet extends HttpServlet
 			ret.append(entry);
 		}
 		return ret.toString();
+	}
+	
+	private static void println(PrintWriter a_out, String a_line)
+	{
+		synchronized(a_out)
+		{
+			a_out.println(a_line);
+		}
 	}
 }
