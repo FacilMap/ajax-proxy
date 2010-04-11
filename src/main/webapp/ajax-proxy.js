@@ -176,6 +176,9 @@ var AjaxProxyXMLHttpRequest = function() {
 		scriptEl.src = url;
 		scriptEl.type = "text/javascript";
 		document.getElementsByTagName("head")[0].appendChild(scriptEl);
+
+		if(AjaxProxyXMLHttpRequest.debug)
+			alert(url);
 	};
 
 	this.abort = function() {
@@ -276,6 +279,12 @@ AjaxProxyXMLHttpRequest.DONE = 4;
  * @var String
  */
 AjaxProxyXMLHttpRequest.URL = "http://osm.cdauth.eu/ajax-proxy/proxy.js";
+
+/**
+ * If this is true, some debugging alert boxes will be shown.
+ * @var Boolean
+ */
+AjaxProxyXMLHttpRequest.debug = false;
 
 /**
  * Contains all AjaxProxyXMLHttpRequest objects that are currently waiting for a response from the Servlet.
