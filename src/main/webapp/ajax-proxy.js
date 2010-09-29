@@ -143,7 +143,9 @@ var AjaxProxyXMLHttpRequest = function() {
 		if(this._method == "GET" || this._method == "HEAD")
 			data = undefined;
 		
-		this._instanceName = new Date().getTime();
+		do
+			this._instanceName = Math.round(Math.random() * new Date().getTime());
+		while(AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] != undefined);
 		AjaxProxyXMLHttpRequest._existingInstances[this._instanceName] = this;
 		
 		var url = AjaxProxyXMLHttpRequest.URL;
