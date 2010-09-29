@@ -320,6 +320,8 @@ public class Servlet extends HttpServlet
 		}
 		
 		println(a_out, "}");
+		println(a_out, "else");
+		println(a_out, "\tthrow new Error(\"ajax-proxy error: instance " + a_jsObj + " does not exist. URL: \" + " + escapeJSString(a_url) + ");");
 	}
 	
 	/**
