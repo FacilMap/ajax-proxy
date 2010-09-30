@@ -259,7 +259,7 @@ var AjaxProxyXMLHttpRequest = function() {
 			}
 			else
 			{
-				this.responseXML = new ActiveXObject("MSXML2.DOMDocument");
+				this.responseXML = new ActiveXObject("Microsoft.XMLDOM");
 				this.responseXML.async = false;
 				this.responseXML.loadXML(this.responseText);
 			}
