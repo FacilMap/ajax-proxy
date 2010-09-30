@@ -332,6 +332,8 @@ public class Servlet extends HttpServlet
 	 */
 	public static String escapeJSString(String a_str)
 	{
+		if(a_str == null)
+			return "null";
 		return escapeJSString(a_str.toCharArray(), 0, a_str.length());
 	}
 	
