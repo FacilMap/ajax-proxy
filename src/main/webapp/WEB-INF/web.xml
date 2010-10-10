@@ -48,6 +48,8 @@
 					tagwatch\.stoecker\.eu/osmxapi/.*
 					|
 					tagwatch\.openstreetmap\.de/osmxapi/.*
+					|
+					open\.mapquestapi\.com/.*
 				)$
 			</param-value>
 		</init-param>
