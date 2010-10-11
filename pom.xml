@@ -34,12 +34,6 @@
 		<developerConnection>git@gitorious.org:ajax-proxy/ajax-proxy.git</developerConnection>
 		<url>http://gitorious.org/ajax-proxy/ajax-proxy/trees</url>
 	</scm>
-	<repositories>
-		<repository>
-			<id>ondrazizka</id>
-			<url>http://ondrazizka.googlecode.com/svn/maven</url>
-		</repository>
-	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -47,13 +41,6 @@
 			<version>2.4</version>
 			<type>jar</type>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>cz.dynawest.third.pljfilter</groupId>
-			<artifactId>pljFilter</artifactId>
-			<version>1.7</version>
-			<type>jar</type>
-			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 	<properties>
