@@ -15,7 +15,7 @@
  * if not, see <http://www.gnu.org/licenses/>.
 */
 
-package de.cdauth.ajaxproxy;
+package eu.cdauth.ajaxproxy;
 
 import java.io.IOException;
 import java.io.InputStream;
