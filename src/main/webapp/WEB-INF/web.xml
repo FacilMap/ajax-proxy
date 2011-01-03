@@ -46,6 +46,8 @@
 					tagwatch\.openstreetmap\.de/osmxapi/.*
 					|
 					open\.mapquestapi\.com/.*
+					|
+					olm\.openstreetmap\.de/api/.*
 				)$
 			</param-value>
 		</init-param>
