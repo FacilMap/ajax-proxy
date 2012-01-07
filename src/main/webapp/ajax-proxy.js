@@ -30,7 +30,7 @@
  */
 
 var AjaxProxyXMLHttpRequest = function() {
-    this.onreadystatechange = function() { };
+	this.onreadystatechange = function() { };
 
 	this.UNSENT = 0;
 	this.OPENED = 1;
