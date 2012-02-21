@@ -156,8 +156,9 @@ public class Servlet extends HttpServlet
 	 */
 	protected void proxyRequest(String a_url, final String a_jsObj, String a_method, String a_data, Map<String,String> a_headers, String a_remoteUserAgent, String a_remoteAddr, final PrintWriter a_out)
 	{
-		println(a_out, "if(window."+a_jsObj+" != undefined)");
-		println(a_out, "{");
+		println(a_out, "if(typeof window."+a_jsObj+" == \"undefined\")");
+		println(a_out, "\tthrow new Error(\"ajax-proxy error: instance " + a_jsObj + " does not exist. URL: \" + " + escapeJSString(a_url) + ");");
+		println(a_out, "");
 		
 		Thread keepAlive = null;
 
@@ -186,7 +187,7 @@ public class Servlet extends HttpServlet
 						return;
 					}
 
-					println(a_out, "\t"+a_jsObj+"._resetTimeout();");
+					println(a_out, a_jsObj+"._resetTimeout();");
 				}
 			};
 			keepAlive.start();
@@ -236,17 +237,17 @@ public class Servlet extends HttpServlet
 				send.flush();
 			}
 
-			println(a_out, "\t"+a_jsObj+".status = "+conn.getResponseCode()+";");
-			println(a_out, "\t"+a_jsObj+".statusText = "+escapeJSString(conn.getResponseMessage())+";");
-			println(a_out, "\t"+a_jsObj+"._responseHeaders = { };");
+			println(a_out, a_jsObj+".status = "+conn.getResponseCode()+";");
+			println(a_out, a_jsObj+".statusText = "+escapeJSString(conn.getResponseMessage())+";");
+			println(a_out, a_jsObj+"._responseHeaders = { };");
 			for(Map.Entry<String,List<String>> responseHeader : conn.getHeaderFields().entrySet())
 			{
 				if(responseHeader.getKey() == null)
 					continue;
-				println(a_out, "\t"+a_jsObj+"._responseHeaders["+escapeJSString(responseHeader.getKey())+"] = "+escapeJSString(implode(", ", responseHeader.getValue()))+";");
+				println(a_out, a_jsObj+"._responseHeaders["+escapeJSString(responseHeader.getKey())+"] = "+escapeJSString(implode(", ", responseHeader.getValue()))+";");
 			}
-			println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".HEADERS_RECEIVED;");
-			println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
+			println(a_out, a_jsObj+".readyState = "+a_jsObj+".HEADERS_RECEIVED;");
+			println(a_out, a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
 			println(a_out, "");
 			
@@ -271,45 +272,45 @@ public class Servlet extends HttpServlet
 			{
 				if(!receiveState)
 				{
-					println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".LOADING;");
-					println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
+					println(a_out, a_jsObj+".readyState = "+a_jsObj+".LOADING;");
+					println(a_out, a_jsObj+"._onreadystatechangeWrapper();");
 					a_out.flush();
 					receiveState = true;
 					
 					println(a_out, "");
-					println(a_out, "\t"+a_jsObj+".responseText = \"\";");
+					println(a_out, a_jsObj+".responseText = \"\";");
 				}
 				
-				println(a_out, "\t"+a_jsObj+".responseText += "+escapeJSString(buffer, 0, read)+";");
+				println(a_out, a_jsObj+".responseText += "+escapeJSString(buffer, 0, read)+";");
 				
 				if(!response.ready())
 				{
-					println(a_out, "\t"+a_jsObj+"._parseResponseXML();");
+					println(a_out, a_jsObj+"._parseResponseXML();");
 					a_out.flush();
 				}
 			}
 			
-			println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".DONE;");
-			println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
+			println(a_out, a_jsObj+".readyState = "+a_jsObj+".DONE;");
+			println(a_out, a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
 			println(a_out, "");
 		} catch(Exception e) {
 			if(e instanceof IOException)
 			{
-				println(a_out, "\t"+a_jsObj+".status = 502;");
-				println(a_out, "\t"+a_jsObj+".statusText = \"Bad Gateway\";");
+				println(a_out, a_jsObj+".status = 502;");
+				println(a_out, a_jsObj+".statusText = \"Bad Gateway\";");
 			}
 			else
 			{
-				println(a_out, "\t"+a_jsObj+".status = 501;");
-				println(a_out, "\t"+a_jsObj+".statusText = \"Not implemented\";");
+				println(a_out, a_jsObj+".status = 501;");
+				println(a_out, a_jsObj+".statusText = \"Not implemented\";");
 			}
-			println(a_out, "\t"+a_jsObj+".responseText = "+escapeJSString(e.getClass().getName()+": "+e.getMessage()+"\n")+" +");
+			println(a_out, a_jsObj+".responseText = "+escapeJSString(e.getClass().getName()+": "+e.getMessage()+"\n")+" +");
 			for(StackTraceElement line : e.getStackTrace())
-				println(a_out, "\t"+escapeJSString(line.toString() + "\n")+" +");
-			println(a_out, "\t\"\";");
-			println(a_out, "\t"+a_jsObj+".readyState = "+a_jsObj+".DONE;");
-			println(a_out, "\t"+a_jsObj+"._onreadystatechangeWrapper();");
+				println(a_out, escapeJSString(line.toString() + "\n")+" +");
+			println(a_out, "\"\";");
+			println(a_out, a_jsObj+".readyState = "+a_jsObj+".DONE;");
+			println(a_out, a_jsObj+"._onreadystatechangeWrapper();");
 			a_out.flush();
 			println(a_out, "");
 		}
@@ -318,10 +319,6 @@ public class Servlet extends HttpServlet
 			if(keepAlive != null)
 				keepAlive.interrupt();
 		}
-		
-		println(a_out, "}");
-		println(a_out, "else");
-		println(a_out, "\tthrow new Error(\"ajax-proxy error: instance " + a_jsObj + " does not exist. URL: \" + " + escapeJSString(a_url) + ");");
 	}
 	
 	/**
