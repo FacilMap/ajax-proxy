@@ -129,7 +129,7 @@ var AjaxProxyXMLHttpRequest = function() {
 		if(this.readyState != this.OPENED || this._sent)
 			throw "INVALID_STATE_ERR";
 
-		header = header.toLower();
+		header = header.toLowerCase();
 		if(this._requestHeaders[header] != undefined)
 			this._requestHeaders[header] += ", "+value;
 		else
