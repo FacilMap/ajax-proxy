@@ -318,7 +318,7 @@ AjaxProxyXMLHttpRequest.DONE = 4;
  * The URL of the proxy.js Servlet to use.
  * @var String
  */
-AjaxProxyXMLHttpRequest.URL = "http://api.facilmap.org/ajax-proxy/proxy.js";
+AjaxProxyXMLHttpRequest.URL = "https://api.facilmap.org/ajax-proxy/proxy.js";
 
 /**
  * A timeout in seconds. When no data is received during this amount of time, the status changes to READY with
